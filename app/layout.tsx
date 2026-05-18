@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/wishlist", label: "API Wishlist" },
+  { href: "/warroom", label: "Warroom" },
   {
     href: "https://github.com/tlejay/ghostpilot",
     label: "GhostPilot ↗",
