@@ -1,80 +1,165 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { randomUUID } from "node:crypto";
+import {
+  type MbtEventType,
+  type MbtWebhookBody,
+  type SignatureStatus,
+  parseAndValidate,
+  verifySignature,
+  isStale,
+  dedupeKey,
+  recordAndCheckDuplicate,
+} from "@/lib/webhook/verify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type MbtStoreWebhookBody = {
-  event: string;
-  event_id: string;
-  event_ts: string;
-  product?: unknown;
-  signature?: string;
-};
+type HandlerResult = { ok: true } | { ok: false; error: string };
 
-function verifySignature(rawBody: string, headerSig: string | null, secret: string): boolean {
-  if (!headerSig) return false;
-  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
-  const a = Buffer.from(expected, "utf8");
-  const b = Buffer.from(headerSig.replace(/^sha256=/, ""), "utf8");
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(a, b);
+async function onSold(body: MbtWebhookBody): Promise<HandlerResult> {
+  console.log("[mbt-store-webhook] product.sold", {
+    productId: body.productId,
+    code: body.code,
+    orderNo: body.orderNo,
+    ts: body.ts,
+  });
+  return { ok: true };
 }
 
+async function onReserved(body: MbtWebhookBody): Promise<HandlerResult> {
+  console.log("[mbt-store-webhook] product.reserved", {
+    productId: body.productId,
+    code: body.code,
+    ts: body.ts,
+  });
+  return { ok: true };
+}
+
+async function onAvailable(body: MbtWebhookBody): Promise<HandlerResult> {
+  console.log("[mbt-store-webhook] product.available", {
+    productId: body.productId,
+    code: body.code,
+    ts: body.ts,
+  });
+  return { ok: true };
+}
+
+async function onOrderConfirmed(body: MbtWebhookBody): Promise<HandlerResult> {
+  console.log("[mbt-store-webhook] order.confirmed", {
+    orderNo: body.orderNo,
+    productId: body.productId,
+    ts: body.ts,
+  });
+  return { ok: true };
+}
+
+async function onOrderShipped(body: MbtWebhookBody): Promise<HandlerResult> {
+  console.log("[mbt-store-webhook] order.shipped", {
+    orderNo: body.orderNo,
+    productId: body.productId,
+    ts: body.ts,
+  });
+  return { ok: true };
+}
+
+const handlers: Record<MbtEventType, (b: MbtWebhookBody) => Promise<HandlerResult>> = {
+  "product.sold": onSold,
+  "product.reserved": onReserved,
+  "product.available": onAvailable,
+  "order.confirmed": onOrderConfirmed,
+  "order.shipped": onOrderShipped,
+};
+
 export async function POST(req: NextRequest) {
+  const eventId = randomUUID();
+  const receivedAt = new Date().toISOString();
+
   const raw = await req.text();
 
-  let parsed: MbtStoreWebhookBody | null = null;
-  try {
-    parsed = JSON.parse(raw) as MbtStoreWebhookBody;
-  } catch {
+  const parsed = parseAndValidate(raw);
+  if (!parsed.ok) {
+    console.warn("[mbt-store-webhook] body rejected", { error: parsed.error });
+    const status = parsed.error === "unknown_event_type" ? 400 : 400;
     return NextResponse.json(
-      { ok: false, error: "invalid_json" },
-      { status: 400 },
+      { ok: false, error: parsed.error, event_id: eventId },
+      { status },
     );
   }
+  const body = parsed.body;
 
   const secret = process.env.MBT_WEBHOOK_SECRET;
-  const headerSig =
-    req.headers.get("x-mbt-signature") ??
-    req.headers.get("x-signature") ??
-    null;
+  const headerSig = req.headers.get("x-mbt-signature");
+  const sigStatus: SignatureStatus = verifySignature(raw, headerSig, secret);
 
-  let signatureStatus: "verified" | "unverified" | "no_secret_configured" =
-    "unverified";
-
-  if (!secret) {
-    signatureStatus = "no_secret_configured";
-    console.log(
-      "[mbt-store-webhook] no MBT_WEBHOOK_SECRET configured — accepting payload unverified",
-    );
-  } else {
-    const ok = verifySignature(raw, headerSig, secret);
-    if (!ok) {
-      console.warn("[mbt-store-webhook] signature mismatch — rejecting", {
-        event: parsed.event,
-        event_id: parsed.event_id,
+  if (secret) {
+    if (sigStatus !== "verified") {
+      console.warn("[mbt-store-webhook] signature rejected", {
+        event: body.event,
+        productId: body.productId,
+        reason: sigStatus,
       });
       return NextResponse.json(
-        { ok: false, error: "bad_signature" },
+        { ok: false, error: "bad_signature", reason: sigStatus, event_id: eventId },
         { status: 401 },
       );
     }
-    signatureStatus = "verified";
+  } else {
+    console.warn(
+      "[mbt-store-webhook] MBT_WEBHOOK_SECRET not configured — accepting unverified",
+      { event: body.event, productId: body.productId },
+    );
   }
 
-  console.log("[mbt-store-webhook] received", {
-    event: parsed.event,
-    event_id: parsed.event_id,
-    event_ts: parsed.event_ts,
-    product: parsed.product,
-    signature_status: signatureStatus,
-  });
+  if (isStale(body.ts)) {
+    console.warn("[mbt-store-webhook] stale event dropped", {
+      event: body.event,
+      productId: body.productId,
+      ts: body.ts,
+    });
+    return NextResponse.json(
+      { ok: false, error: "stale_event", event_id: eventId },
+      { status: 410 },
+    );
+  }
+
+  const key = dedupeKey(body);
+  const dedupe = recordAndCheckDuplicate(key);
+  if (dedupe.duplicate) {
+    console.log("[mbt-store-webhook] dedupe hit", {
+      key,
+      backend: dedupe.backend,
+    });
+    return NextResponse.json({
+      ok: true,
+      deduped: true,
+      event_id: eventId,
+      received_at: receivedAt,
+      signature: sigStatus,
+      dedupe_backend: dedupe.backend,
+    });
+  }
+
+  const handler = handlers[body.event];
+  const result = await handler(body);
+  if (!result.ok) {
+    console.error("[mbt-store-webhook] handler failed", {
+      event: body.event,
+      productId: body.productId,
+      error: result.error,
+    });
+    return NextResponse.json(
+      { ok: false, error: result.error, event_id: eventId },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({
     ok: true,
-    received: parsed.event_id,
-    signature: signatureStatus,
+    deduped: false,
+    event_id: eventId,
+    received_at: receivedAt,
+    signature: sigStatus,
+    dedupe_backend: dedupe.backend,
   });
 }
 
@@ -82,7 +167,7 @@ export async function GET() {
   return NextResponse.json(
     {
       ok: false,
-      hint: "POST mbt-store webhook payloads here. GET is just a heartbeat.",
+      hint: "POST mbt-store webhook payloads here with X-MBT-Signature header. GET is just a heartbeat.",
     },
     { status: 405 },
   );
