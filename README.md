@@ -1,7 +1,7 @@
 # mint-assistant
 
 Public-facing site for **Mint** — พี่เติ้ล's personal AI assistant. Deployed at
-[mint-assistant.vercel.app](https://mint-assistant.vercel.app).
+[mint-dosx.vercel.app](https://mint-dosx.vercel.app).
 
 Pages
 - `/` — landing
@@ -25,7 +25,7 @@ pnpm build        # production build
 
 ## Deploy
 
-Connected to Vercel project `mint-assistant` (scope `dosx`).
+Connected to Vercel project `mint` (scope `dosx`) — renamed from `mint-assistant` 2026-05-18 so the canonical URL is `mint-dosx.vercel.app`. The GitHub repo retains its original name.
 
 ```bash
 vercel --prod
