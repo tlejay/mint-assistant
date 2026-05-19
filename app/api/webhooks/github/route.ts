@@ -94,6 +94,12 @@ function formatDiscordMessage(
         content: `🏷️ **Issue #${i.number} labeled** \`${labels}\` — ${i.title}\n${i.html_url}`,
       };
     }
+    if (action === "edited") {
+      const stateLine = i.state === "closed" ? "state: closed" : "state: open";
+      return {
+        content: `✏️ **Issue #${i.number} edited by \`${sender}\`:** ${i.title}\n${i.html_url}\n${stateLine}`,
+      };
+    }
     return null;
   }
 
