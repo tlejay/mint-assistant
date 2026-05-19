@@ -14,11 +14,15 @@ export async function GET() {
       log_url: "https://mint-dosx.vercel.app/wishlist/log",
       note:
         WISHLIST_OPEN.length === 0
-          ? "Empty — every vendor-side ask from the v1 wishlist has shipped. Shipped history at log_url."
-          : "Open vendor-side asks. Shipped history (not returned by this endpoint) at log_url.",
+          ? "Empty — every vendor-side ask has shipped. Shipped history at log_url."
+          : `${WISHLIST_OPEN.length} open vendor asks, ranked by ROI. Human-friendly view at doc_url.`,
     },
   };
-  return NextResponse.json(body, {
-    headers: { "Cache-Control": "public, max-age=300" },
+  // Compact JSON (no whitespace padding) for token efficiency.
+  return new NextResponse(JSON.stringify(body), {
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "public, max-age=300",
+    },
   });
 }

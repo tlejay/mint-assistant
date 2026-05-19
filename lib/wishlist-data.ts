@@ -9,12 +9,31 @@
  * and is never returned by the API.
  */
 
+export type OpenPriority =
+  | "hard-blocker"
+  | "regression"
+  | "data-gap"
+  | "token-saver"
+  | "future";
+
+export type OpenCategory =
+  | "webhooks"
+  | "products"
+  | "sellers"
+  | "caption"
+  | "collage"
+  | "comments";
+
 export type OpenItem = {
-  id: number;
+  id: string;
   title: string;
-  description: string;
-  category: string;
-  priority: "high" | "medium" | "lower";
+  ask: string;
+  why: string;
+  current_workaround: string;
+  token_impact: string;
+  priority: OpenPriority;
+  category: OpenCategory;
+  spec?: string;
 };
 
 export type LogItem = {
@@ -38,16 +57,99 @@ export type LogItem = {
 
 /* ────────────────────────── OPEN (vendor-facing) ────────────────────────── */
 /*
- * Currently empty: every vendor-side ask from the v1 wishlist shipped 2026-05-18,
- * and the v2 list documented in commit 4f31581 was — on re-read — entirely Mint's
- * own integration work (webhook→inbox bridge, brand auto-tag, size-collage reply,
- * per-seller analytics, Warroom config sync, etc.). Those don't belong on a vendor-
- * facing wishlist; they're tracked in Mint's own TODO.md.
- *
- * Add an entry here only when there's a genuinely new vendor endpoint / behavior
- * we want shipped.
+ * Five vendor asks, ranked by ROI to Mint's day-to-day pipeline. Order is
+ * intentional — vendor LLM can read top-to-bottom and ship in that order.
  */
-export const WISHLIST_OPEN: OpenItem[] = [];
+export const WISHLIST_OPEN: OpenItem[] = [
+  {
+    id: "webhook-secret",
+    title: "MBT_WEBHOOK_SECRET (HMAC-SHA256 signing key)",
+    priority: "hard-blocker",
+    category: "webhooks",
+    ask: "ส่ง MBT_WEBHOOK_SECRET ให้ Mint vault keychain + register receiver URL https://mint-dosx.vercel.app/api/webhooks/mbt-store ผ่าน POST /api/webhooks (admin).",
+    why: "ยังไม่มี secret → Mint verify HMAC payload ไม่ได้ → Tier 3 receiver offline. Mint ปัจจุบันต้อง poll /api/products เป็นรอบๆ เพื่อ detect sold/reserved/listed.",
+    current_workaround: "poll /api/products ~50 calls/day × 18 products.",
+    token_impact:
+      "Before: ~$0.50/day Mint LLM polling overhead. After: event-driven, 0 polls, realtime <5s latency.",
+    spec: `POST /api/webhooks (admin)
+Body: {
+  url: "https://mint-dosx.vercel.app/api/webhooks/mbt-store",
+  events: ["product.sold", "product.reserved", "product.listed"],
+  secret: <returned>
+}`,
+  },
+  {
+    id: "pick-500-regression",
+    title: "/api/products/pick HTTP 500 regression",
+    priority: "regression",
+    category: "products",
+    ask: "แก้ /api/products/pick และ /api/products/pick?random=true ที่คืน HTTP 500 ตั้งแต่ v1.14.0-build023.",
+    why: "Bot รัน Tier 1 fallback ไป legacy search+shuffle ได้อยู่ แต่ extra round-trip + duplicate filtering ต้องทำเอง.",
+    current_workaround:
+      "try /pick → if 500 → fallback to /api/products?category=studs&status=available&seller=1 + client-side shuffle + exclude_recent_hours filter.",
+    token_impact:
+      "Before: 2 round-trips + client filtering. After: 1 call, server filters.",
+    spec: `curl -sS https://mbt-store.vercel.app/api/products/pick \\
+  -H "Authorization: Bearer $MBT_API_TOKEN" -v
+# Expect 200 with one product, exclude_recent_hours=24 + random=true honored`,
+  },
+  {
+    id: "seller-groups-populate-1",
+    title: "populate /api/sellers/1/groups data",
+    priority: "data-gap",
+    category: "sellers",
+    ask: 'vendor populate seller_groups data ของ seller_id=1 ("เบิร์ด"). ปัจจุบัน list_seller_groups(1) → [] (empty).',
+    why: "Bot ใช้ /sellers/{id}/groups เป็น single source of truth สำหรับ posting routing. ตอนนี้ตก fallback ไป local data/monitor-state.json → ต้อง redeploy บอทเมื่อแก้ group list.",
+    current_workaround:
+      "monitor-state.json local 5 groups priority=high. มิ้นพร้อมส่ง JSON ให้ vendor import ผ่าน admin.",
+    token_impact:
+      "Process-saver, not token-saver. Future config edits don't require Mint redeploy.",
+    spec: `Expected shape:
+{
+  groups: [
+    {
+      groupName: "...",
+      groupUrl: "https://facebook.com/...",
+      rules: { priority: "high", sell_post: true }
+    }
+  ]
+}`,
+  },
+  {
+    id: "caption-brand-hashtag",
+    title: "caption_template auto-inject #brand hashtag",
+    priority: "token-saver",
+    category: "caption",
+    ask: "เพิ่ม #brand hashtag ที่ท้ายบรรทัด 1 ของ /api/products/{id}/caption_template?platform=facebook.",
+    why: "ตอนนี้ Mint ต้อง call /api/brands แยกเพื่อหา hashtag แล้ว concat client-side. ถ้า vendor inject ใน template → drop 1 round-trip + drop Mint token.",
+    current_workaround: "list_brands() lookup + string concat.",
+    token_impact:
+      "Before: 1 extra /api/brands round-trip + 50+ tokens client concat per post. After: 0 extra calls.",
+    spec: `Before: "Nike Tiempo Legend 10 Elite FG FR44/JP280\\n2,390 ฿ สภาพดี ไม่มีตำหนิ"
+After:  "Nike Tiempo Legend 10 Elite FG FR44/JP280 #Nike\\n2,390 ฿ สภาพดี ไม่มีตำหนิ"
+Edge: brand="adidas" → "#adidas" (lowercase preserved as-is from /api/brands).`,
+  },
+  {
+    id: "product-size-collage-url",
+    title: "include size_collage_url in /api/products and /api/products/pick response",
+    priority: "token-saver",
+    category: "collage",
+    ask: "เพิ่ม field size_collage_url ใน product response — cached URL ของ collage ที่ vendor compose ไว้แล้ว.",
+    why: "ตอนนี้ Mint ต้อง call /api/size-collage แยก + compose collage ฝั่ง client. ถ้า vendor cache URL ใน product response → drop 1 call + drop compose step.",
+    current_workaround:
+      "GET /api/size-collage → compose composite client-side via PIL/canvas.",
+    token_impact:
+      "Before: 18 extra /api/size-collage round-trips/day + image compose CPU. After: 0 extra calls, vendor CDN serves cached PNG.",
+    spec: `GET /api/products/STD-094
+Response:
+{
+  "code": "STD-094",
+  "images": [...],
+  "size_collage_url": "https://cdn.mbt-store.com/collage/STD-094-FR40.png",
+  ...
+}`,
+  },
+];
 
 /* ─────────────────────── LOG (shipped vendor history) ───────────────────── */
 
