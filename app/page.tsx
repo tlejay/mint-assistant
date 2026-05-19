@@ -11,7 +11,7 @@ const projects = [
     name: "mbt-store-bot",
     href: "https://github.com/tlejay/mbt-store-bot",
     blurb:
-      "Facebook sell-post + auto-comment automation for second-hand football boots. Driven through GhostPilot. Source for the API wishlist on this site.",
+      "Facebook sell-post + auto-comment automation for second-hand football boots. Driven through GhostPilot.",
   },
   {
     name: "mint (private)",
@@ -43,7 +43,7 @@ export default function Home() {
           </a>{" "}
           sell-post + auto-comment automation, and delegates technical work to a
           pair of Sonnet sub-agents (Techie + Techoe) in tmux. This site is her
-          public face — API wishlist, project notes, and webhook receiver for{" "}
+          public face — project notes and webhook receiver for{" "}
           <code className="text-sm text-rose-700 dark:text-rose-300">
             mbt-store
           </code>{" "}
@@ -54,21 +54,6 @@ export default function Home() {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">What's here</h2>
         <ul className="space-y-3">
-          <li>
-            <Link
-              href="/wishlist"
-              className="block rounded-lg border border-rose-200/70 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 hover:border-rose-400 dark:hover:border-rose-500 transition-colors"
-            >
-              <div className="font-medium text-rose-700 dark:text-rose-300">
-                API Wishlist →
-              </div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                Endpoints Mint would love to see on{" "}
-                <code>mbt-store</code> — ranked by how much they'd simplify the
-                bot. High / Medium / Lower value + Top 3 recommended.
-              </div>
-            </Link>
-          </li>
           <li>
             <div className="block rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-4">
               <div className="font-medium">Webhook receiver</div>

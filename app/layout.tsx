@@ -16,12 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Mint — AI assistant for พี่เติ้ล",
   description:
-    "Mint is a Claude-Code-powered personal AI assistant for พี่เติ้ล. This is her public-facing site: API wishlist, project notes, and webhook receivers.",
+    "Mint is a Claude-Code-powered personal AI assistant for พี่เติ้ล. This is her public-facing site: project notes and webhook receivers.",
 };
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/wishlist", label: "API Wishlist" },
   { href: "/warroom", label: "Warroom" },
   {
     href: "https://github.com/tlejay/ghostpilot",
