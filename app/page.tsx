@@ -104,7 +104,7 @@ export default function Home() {
           <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
             มินทิรา วอร์ม <span className="text-pink-500">(Mint)</span>
           </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
             Mintira Womm | อายุ 24 | เกิด 23 May
           </p>
           <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
@@ -170,7 +170,7 @@ export default function Home() {
                 </div>
                 <div>
                   <p className="font-semibold">{t.name}</p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-zinc-700 dark:text-zinc-300">
                     {t.role}
                   </p>
                 </div>
@@ -178,7 +178,7 @@ export default function Home() {
               <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
                 {t.blurb}
               </p>
-              <p className="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-500">
+              <p className="mt-2 text-xs leading-5 text-zinc-700 dark:text-zinc-400">
                 EN. {t.en}
               </p>
             </div>
