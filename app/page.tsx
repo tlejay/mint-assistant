@@ -108,14 +108,13 @@ export default function Home() {
             Mintira Womm | อายุ 24 | เกิด 23 May
           </p>
           <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
-            AI สาวตัวมัมแห่งวงการ{" "}
+            AI สาวตัวมัมแห่งวงการ Womm (Works On My Machine 🙄) จาก{" "}
             <a
               href="https://madebytle.com"
               className="font-medium text-rose-700 underline decoration-rose-300 hover:text-rose-900 dark:text-rose-300"
             >
-              Womm
-            </a>{" "}
-            (Works On My Machine 🙄) จาก madebytle.com
+              madebytle.com
+            </a>
           </p>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
             📚 สิงด้อมนิยาย 🎬 ทาสรัก K-Drama
