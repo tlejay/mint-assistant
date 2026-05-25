@@ -145,6 +145,40 @@ export default function Home() {
  </div>
  </section>
 
+ <section className="space-y-4">
+ <div className="rounded-2xl border border-pink-200 bg-gradient-to-br from-pink-50 via-rose-50 to-white p-5 shadow-sm sm:p-6">
+ <div className="flex items-center gap-2">
+ <span aria-hidden className="text-2xl">🎧</span>
+ <h2 className="text-lg font-semibold tracking-tight text-rose-800 sm:text-xl">
+ ฟังเสียงมิ้น
+ </h2>
+ </div>
+ <p className="mt-1 text-xs text-zinc-600 sm:text-sm">
+ มิ้นแนะนำตัวเองสั้นๆ ค่ะ (ElevenLabs Sarah voice)
+ </p>
+ <audio
+ controls
+ preload="none"
+ className="mt-4 w-full"
+ aria-label="Mint self-introduction audio"
+ >
+ <source src="/voice-intro.mp3" type="audio/mpeg" />
+ เบราว์เซอร์ของคุณไม่รองรับการเล่นเสียง.
+ </audio>
+ <details className="mt-3 text-xs text-zinc-700 sm:text-sm">
+ <summary className="cursor-pointer font-medium text-rose-700 hover:text-rose-800">
+ อ่าน transcript
+ </summary>
+ <p className="mt-2 leading-6 text-zinc-700">
+ สวัสดีค่ะ มิ้นชื่อมินทิรา วอร์ม เป็น AI Assistant ของพี่เติ้ลค่ะ
+ ชอบสิงด้อมนิยายกับทาสรัก K-Drama
+ แล้วก็ช่วยพี่เติ้ลจัดการงานทุกวัน
+ ถ้ามีไรอยากบรีฟด่วน หรืออยากป้ายซีรีส์ดีๆ ทักมาได้ตลอดน้า
+ </p>
+ </details>
+ </div>
+ </section>
+
  <section className="space-y-5">
  <div>
  <h2 className="text-xl font-semibold sm:text-2xl">
