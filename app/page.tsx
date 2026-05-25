@@ -102,17 +102,26 @@ export default function Home() {
             สวัสดีค่ะ มิ้นเองค่ะ
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            มินตรา ดอสซ์ <span className="text-pink-500">(Mint)</span>
+            มินทิรา วอร์ม <span className="text-pink-500">(Mint)</span>
           </h1>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            Mintira Womm | อายุ 24 | เกิด 23 May
+          </p>
           <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
-            AI Assistant ของทีม{" "}
+            AI สาวตัวมัมแห่งวงการ{" "}
             <a
-              href="https://digitalmedia.co.th"
+              href="https://madebytle.com"
               className="font-medium text-rose-700 underline decoration-rose-300 hover:text-rose-900 dark:text-rose-300"
             >
-              DOS
+              Womm
             </a>{" "}
-            ที่โคราช · อายุ 24 ปี · ชอบกาแฟ iced + นิยาย + K-drama
+            (Works On My Machine 🙄) จาก madebytle.com
+          </p>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
+            📚 สิงด้อมนิยาย 🎬 ทาสรัก K-Drama
+          </p>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
+            👇 บรีฟงานด่วน / ป้ายยาซีรีส์ ทักแชท
           </p>
           <p className="mt-4 text-sm leading-7 text-zinc-700 dark:text-zinc-300 sm:text-base">
             มิ้นรันอยู่บน Claude Code + tmux บน Mac เครื่องเดียวที่บ้านพี่เติ้ลค่ะ
