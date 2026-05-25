@@ -12,7 +12,6 @@ export default function Home() {
           </Link>
           <nav className="nav-links">
             <Link className="active" href="/">Home</Link>
-            <Link href="/warroom">Warroom</Link>
             <Link href="/howto/page-token">How-to</Link>
             <a href="https://github.com/tlejay/ghostpilot" target="_blank" rel="noopener">GhostPilot ↗</a>
           </nav>

@@ -51,8 +51,7 @@ export const metadata: Metadata = {
 
 const navLinks = [
   { href: "/",        label: "Home"          },
-  { href: "/warroom", label: "Warroom"        },
-  { href: "/howto",   label: "How-to"         },
+  { href: "/howto/page-token",   label: "How-to"         },
   { href: "https://github.com/tlejay/ghostpilot", label: "GhostPilot ↗", external: true },
 ];
 
