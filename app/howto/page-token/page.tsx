@@ -151,74 +151,76 @@ export default function PageTokenHowTo() {
           "linear-gradient(135deg, #fff5fa 0%, #f3edff 45%, #eef9ff 100%)",
       }}
     >
-      <div className="mx-auto max-w-3xl px-6 py-16">
-        <header className="mb-12 text-center">
-          <p className="mb-3 text-sm font-medium tracking-widest text-pink-500">
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
+        <header className="mb-10 text-center sm:mb-12">
+          <p className="mb-3 text-xs font-medium tracking-widest text-pink-500 sm:text-sm">
             HOW TO
           </p>
-          <h1 className="text-3xl font-bold leading-tight text-slate-900 sm:text-4xl">
+          <h1 className="text-2xl font-bold leading-tight break-words text-slate-900 sm:text-4xl">
             How to get a Long-lived Facebook{" "}
             <span className="text-pink-600">Page Access Token</span>
           </h1>
-          <p className="mt-6 text-base leading-7 text-slate-600">
+          <p className="mt-5 text-sm leading-7 text-slate-600 sm:mt-6 sm:text-base">
             Step-by-step วิธีสร้าง Facebook App ใหม่และดึง{" "}
             <strong>Page Access Token ที่ไม่มีวันหมดอายุ</strong>{" "}
             มาใช้ automate การโพสต์บน Page ของตัวเอง.
             ใช้กระบวนการนี้ครั้งเดียวก็จบ ไม่ต้อง re-login อีกตราบใดที่คุณยังเป็น admin
             ของ Page.
           </p>
-          <div className="mx-auto mt-6 inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-sm text-slate-600 ring-1 ring-pink-200">
-            ⏱ ใช้เวลา ~15 นาที · ฟรี · ไม่ต้อง App Review
+          <div className="mx-auto mt-6 inline-flex max-w-full items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs text-slate-600 ring-1 ring-pink-200 sm:text-sm">
+            <span>⏱ ใช้เวลา ~15 นาที</span>
+            <span>ฟรี</span>
+            <span>ไม่ต้อง App Review</span>
           </div>
         </header>
 
-        <section className="mb-10 rounded-2xl bg-white/60 p-6 ring-1 ring-pink-200 backdrop-blur">
-          <h2 className="mb-3 text-lg font-semibold text-slate-900">
+        <section className="mb-10 rounded-2xl bg-white/60 p-5 ring-1 ring-pink-200 backdrop-blur sm:p-6">
+          <h2 className="mb-3 text-base font-semibold text-slate-900 sm:text-lg">
             Token นี้คืออะไร แล้วทำไมต้องใช้
           </h2>
           <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
-            <li>
+            <li className="break-words">
               <strong>User token</strong> ปกติของ Facebook อายุสั้นมาก (1-2 ชั่วโมง)
               ต่อให้แลกเป็น long-lived ก็แค่ <strong>60 วัน</strong> หลังจากนั้นต้อง login ใหม่
             </li>
-            <li>
-              <strong>Page token</strong> ที่ได้จาก <code>/me/accounts</code>{" "}
+            <li className="break-words">
+              <strong>Page token</strong> ที่ได้จาก <code className="break-all">/me/accounts</code>{" "}
               ด้วย <em>long-lived user token</em> จะ{" "}
               <strong>ไม่มีวันหมดอายุ</strong> ตราบใดที่คุณยังเป็น admin ของ Page
               ตัวเดียวกัน (Facebook ออกแบบไว้สำหรับ automation/server-to-server โดยเฉพาะ)
             </li>
-            <li>
+            <li className="break-words">
               เอาไว้ใช้กับ Graph API endpoint อย่าง{" "}
-              <code>POST /me/feed</code>,{" "}
-              <code>POST /me/photos</code>,{" "}
-              <code>GET /me/insights</code>{" "}
+              <code className="break-all">POST /me/feed</code>,{" "}
+              <code className="break-all">POST /me/photos</code>,{" "}
+              <code className="break-all">GET /me/insights</code>{" "}
               ฯลฯ
             </li>
           </ul>
         </section>
 
-        <ol className="space-y-12">
+        <ol className="space-y-10 sm:space-y-12">
           {steps.map((step) => (
             <li key={step.n} id={`step-${step.n}`} className="scroll-mt-20">
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pink-500 text-base font-bold text-white shadow-sm">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-500 text-sm font-bold text-white shadow-sm sm:h-10 sm:w-10 sm:text-base">
                   {step.n}
                 </div>
-                <div className="flex-1">
-                  <h2 className="text-xl font-semibold text-slate-900">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-lg font-semibold leading-snug break-words text-slate-900 sm:text-xl">
                     {step.title}
                   </h2>
-                  <p className="mt-3 text-base leading-7 text-slate-700">
+                  <p className="mt-3 text-sm leading-7 text-slate-700 [overflow-wrap:anywhere] sm:text-base">
                     {step.thai}
                   </p>
                   {step.english && (
-                    <p className="mt-2 text-sm leading-6 text-slate-500">
-                      <span className="font-medium text-slate-400">EN · </span>
+                    <p className="mt-2 text-xs leading-6 text-slate-500 [overflow-wrap:anywhere] sm:text-sm">
+                      <span className="font-medium text-slate-400">EN. </span>
                       {step.english}
                     </p>
                   )}
                   {step.note && (
-                    <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 ring-1 ring-amber-200">
+                    <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 ring-1 ring-amber-200 [overflow-wrap:anywhere]">
                       ⚠ {step.note}
                     </p>
                   )}
@@ -235,16 +237,16 @@ export default function PageTokenHowTo() {
                     </figure>
                   )}
                   {step.n === 14 && (
-                    <pre className="mt-5 overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-6 text-pink-100">
+                    <pre className="mt-5 overflow-x-auto rounded-xl bg-slate-900 p-3 text-[11px] leading-5 text-pink-100 sm:p-4 sm:text-xs sm:leading-6">
                       <code>{curl1}</code>
                     </pre>
                   )}
                   {step.n === 15 && (
                     <>
-                      <pre className="mt-5 overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-6 text-pink-100">
+                      <pre className="mt-5 overflow-x-auto rounded-xl bg-slate-900 p-3 text-[11px] leading-5 text-pink-100 sm:p-4 sm:text-xs sm:leading-6">
                         <code>{curl2}</code>
                       </pre>
-                      <p className="mt-4 text-sm leading-6 text-slate-700">
+                      <p className="mt-4 text-sm leading-6 text-slate-700 [overflow-wrap:anywhere]">
                         Response จะมี array <code>data[]</code> แต่ละตัวคือ Page
                         ที่คุณเป็น admin field <code>access_token</code>{" "}
                         ของ Page นั้นแหละคือ{" "}
@@ -258,50 +260,50 @@ export default function PageTokenHowTo() {
           ))}
         </ol>
 
-        <section className="mt-16 rounded-2xl bg-white/60 p-6 ring-1 ring-pink-200 backdrop-blur">
-          <h2 className="text-lg font-semibold text-slate-900">
+        <section className="mt-16 rounded-2xl bg-white/60 p-5 ring-1 ring-pink-200 backdrop-blur sm:p-6">
+          <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
             ตรวจสอบว่า Token ไม่มีวันหมดอายุจริง
           </h2>
-          <p className="mt-3 text-sm leading-6 text-slate-700">
+          <p className="mt-3 text-sm leading-6 text-slate-700 [overflow-wrap:anywhere]">
             เรียก <code>debug_token</code> endpoint แล้วดูค่า{" "}
             <code>expires_at</code> ต้องเป็น <strong>0</strong> (แปลว่า never).
           </p>
-          <pre className="mt-4 overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-6 text-emerald-100">
+          <pre className="mt-4 overflow-x-auto rounded-xl bg-slate-900 p-3 text-[11px] leading-5 text-emerald-100 sm:p-4 sm:text-xs sm:leading-6">
             <code>{curlVerify}</code>
           </pre>
 
-          <h3 className="mt-8 text-base font-semibold text-slate-900">
+          <h3 className="mt-8 text-sm font-semibold text-slate-900 sm:text-base">
             ลองโพสต์
           </h3>
-          <pre className="mt-3 overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-6 text-emerald-100">
+          <pre className="mt-3 overflow-x-auto rounded-xl bg-slate-900 p-3 text-[11px] leading-5 text-emerald-100 sm:p-4 sm:text-xs sm:leading-6">
             <code>{samplePost}</code>
           </pre>
         </section>
 
-        <section className="mt-12 rounded-2xl bg-rose-50/70 p-6 ring-1 ring-rose-200">
-          <h2 className="text-lg font-semibold text-rose-900">
+        <section className="mt-12 rounded-2xl bg-rose-50/70 p-5 ring-1 ring-rose-200 sm:p-6">
+          <h2 className="text-base font-semibold text-rose-900 sm:text-lg">
             Token จะตายเมื่อไหร่
           </h2>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-rose-900">
-            <li>คุณถูกถอดสิทธิ์ admin ของ Page</li>
-            <li>
+            <li className="break-words">คุณถูกถอดสิทธิ์ admin ของ Page</li>
+            <li className="break-words">
               คุณเข้าไป revoke แอปที่{" "}
               <a
                 href="https://www.facebook.com/settings?tab=business_tools"
                 className="underline"
               >
-                Settings → Business Tools
+                Settings &gt; Business Tools
               </a>
             </li>
-            <li>เปลี่ยนรหัสผ่าน Facebook (บางเคส)</li>
-            <li>Facebook ยึดสิทธิ์แอปเพราะละเมิด policy</li>
+            <li className="break-words">เปลี่ยนรหัสผ่าน Facebook (บางเคส)</li>
+            <li className="break-words">Facebook ยึดสิทธิ์แอปเพราะละเมิด policy</li>
           </ul>
-          <p className="mt-4 text-sm leading-6 text-rose-900">
+          <p className="mt-4 text-sm leading-6 text-rose-900 [overflow-wrap:anywhere]">
             ถ้าโดนกรณีใดกรณีหนึ่ง ให้กลับมาเดิน Step 8 ถึง 15 ใหม่ (ไม่ต้องสร้างแอปใหม่)
           </p>
         </section>
 
-        <footer className="mt-16 border-t border-pink-200 pt-8 text-center text-sm text-slate-500">
+        <footer className="mt-16 border-t border-pink-200 pt-8 text-center text-xs text-slate-500 sm:text-sm">
           <p>
             Made with 🌸 by{" "}
             <Link href="/" className="font-medium text-pink-600 hover:underline">
