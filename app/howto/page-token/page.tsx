@@ -1,318 +1,490 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import type React from "react";
 
 export const metadata: Metadata = {
-  title: "How to get a Long-lived Facebook Page Access Token",
+  title: "Long-lived FB Page Access Token — Mint how-to",
   description:
-    "Step-by-step guide (Thai + English) to create a Facebook app and obtain a never-expiring Page Access Token for automating posts on your own Page.",
+    "Step-by-step วิธีดึง Facebook Page token ที่ไม่มีวันหมดอายุ — สร้าง FB App, gen token ใน Graph Explorer, exchange เป็น long-lived, เก็บไว้ใน Keychain.",
 };
 
-type Step = {
-  n: number;
-  title: string;
-  thai: string;
-  english?: string;
-  image?: { src: string; alt: string };
-  note?: string;
-};
+const BASE = "/howto/page-token";
 
-const steps: Step[] = [
-  {
-    n: 1,
-    title: "Open developers.facebook.com/apps",
-    thai: "เข้า https://developers.facebook.com/apps ด้วย account Facebook ที่เป็น admin ของ Page ที่จะให้ token ดูแล แล้วกดปุ่ม Create App มุมขวาบน",
-    english: "Sign in with the Facebook account that admins the Page. Click Create App.",
-    image: { src: "/howto/page-token/01-my-apps.png", alt: "My Apps page" },
-  },
-  {
-    n: 2,
-    title: "Create App modal",
-    thai: "กรอกชื่อแอป (เช่น 'Mint AI Assistant') กับ contact email แล้วกด Next",
-    english: "Enter an app name and your contact email, then Next.",
-    image: { src: "/howto/page-token/02-create-app.png", alt: "Create App modal" },
-  },
-  {
-    n: 3,
-    title: "Pick a use case = Manage everything on your Page",
-    thai: "หน้า Use cases เลือก 'Manage everything on your Page' (จะ unlock Pages API ให้อัตโนมัติ ไม่ต้องไปขอ permission ทีละตัว)",
-    english: "Choose 'Manage everything on your Page'. This bundles the Pages API permissions you need.",
-    image: { src: "/howto/page-token/04-use-cases.png", alt: "Use case selection" },
-  },
-  {
-    n: 4,
-    title: "Skip business portfolio + finalize",
-    thai: "หน้า Business จะถามว่า associate app กับ Business Portfolio ไหม กดข้ามได้ (ผูกทีหลังก็ได้) แล้วกด Create app — Facebook จะให้กรอก password ซ้ำเพื่อยืนยันตัวตน",
-    english: "Skip the Business Portfolio step (you can attach one later) and click Create app. Facebook may ask you to re-enter your password.",
-    image: { src: "/howto/page-token/03-app-name.png", alt: "App details filled" },
-  },
-  {
-    n: 5,
-    title: "Land on the App Dashboard",
-    thai: "เมื่อสร้างสำเร็จจะเข้าสู่ App Dashboard จดเลข App ID ไว้ (จะใช้ตอนแลก token)",
-    english: "After creation you land on the App Dashboard. Note the App ID.",
-    image: { src: "/howto/page-token/06-app-dashboard.png", alt: "App Dashboard" },
-  },
-  {
-    n: 6,
-    title: "Open Use cases → Customize → add 4 page permissions",
-    thai: "ไปที่ Use cases > 'Manage everything on your Page' > Customize. ในตาราง Permissions ให้กด Add ทีละบรรทัด: pages_show_list, pages_manage_posts, pages_read_engagement, pages_manage_metadata จนทุกตัวขึ้น 'Ready for testing'",
-    english:
-      "In Use cases → Manage Pages → Customize. Hit Add next to each: pages_show_list, pages_manage_posts, pages_read_engagement, pages_manage_metadata. They should switch to 'Ready for testing'.",
-    image: { src: "/howto/page-token/07-customize-perms.png", alt: "Customize use case page" },
-  },
-  {
-    n: 7,
-    title: "Verify all four perms = Ready for testing",
-    thai: "เช็คให้แน่ใจว่าทุกตัวขึ้น '0 Ready for testing' (ตัว public_profile กับ business_management จะ default มาให้อยู่แล้ว)",
-    english: "Confirm all four permissions show 'Ready for testing' status.",
-    image: { src: "/howto/page-token/08-perms-ready.png", alt: "Permissions added state" },
-  },
-  {
-    n: 8,
-    title: "Open Graph API Explorer",
-    thai: "ไปที่ Tools > Graph API Explorer (https://developers.facebook.com/tools/explorer/) เลือก Meta App = ชื่อแอปที่เพิ่งสร้าง",
-    english: "Open Tools → Graph API Explorer. Select your new app under Meta App.",
-    image: { src: "/howto/page-token/09-graph-explorer.png", alt: "Graph API Explorer" },
-  },
-  {
-    n: 9,
-    title: "Generate Access Token + approve OAuth",
-    thai: "กดปุ่ม Generate Access Token. Facebook จะเปิด popup ขออนุญาต: กด Continue as <ชื่อคุณ>",
-    english: "Click Generate Access Token. Facebook opens an OAuth popup. Click Continue as <your name>.",
-    image: { src: "/howto/page-token/10-oauth-approve.png", alt: "OAuth approve dialog" },
-  },
-  {
-    n: 10,
-    title: "Pick only the Page you want automated",
-    thai: "หน้า 'Choose the Pages you want ... to access' เลือกเฉพาะ Page ที่จะให้ token ดูแล (ติ๊กตัวเดียวพอ ไม่ต้อง select all) แล้วกด Continue",
-    english: "On the page selector, tick ONLY the Page you want to automate, then Continue.",
-    image: { src: "/howto/page-token/11-pages-selector.png", alt: "Pages selector" },
-  },
-  {
-    n: 11,
-    title: "Review access request + Save",
-    thai: "หน้าสรุปจะแสดงว่าแอปจะเข้าถึงอะไรได้บ้าง กด Save แล้ว Got it",
-    english: "Review the access request and click Save → Got it.",
-    image: { src: "/howto/page-token/12-review-access.png", alt: "Review access request" },
-  },
-  {
-    n: 12,
-    title: "Connected → get short-lived user token",
-    thai: "Popup ปิด แอปกลับสู่ Graph Explorer ช่อง Access Token จะเด้งโทเคน user token สั้น ๆ (ใช้ได้ ~1 ชั่วโมง) มาให้",
-    english:
-      "After approval the dialog closes and Graph Explorer fills the Access Token field with a short-lived user token (~1 hour TTL).",
-    image: { src: "/howto/page-token/13-connected.png", alt: "Connection successful" },
-  },
-  {
-    n: 13,
-    title: "Copy the App Secret",
-    thai: "เปิดอีก tab ไป App settings > Basic แล้วกด Show ที่ช่อง App secret (Facebook อาจขอ password ซ้ำ). คัดลอกเก็บไว้ — อย่าเผยแพร่ตัวนี้เด็ดขาด",
-    english: "Open App settings → Basic, click Show next to App secret, and copy it. Never share it.",
-    image: { src: "/howto/page-token/14-app-secret.png", alt: "App secret revealed" },
-    note: "ความลับ — เก็บใส่ Keychain/secret manager ของคุณ ห้าม commit ลง git",
-  },
-  {
-    n: 14,
-    title: "Exchange short → long-lived USER token (60 days)",
-    thai: "รัน curl นี้ใน terminal เพื่อแลก user token สั้น ๆ ให้กลายเป็น long-lived user token (อายุ ~60 วัน)",
-    english:
-      "Exchange the short-lived user token for a long-lived one (60 days) via the fb_exchange_token grant.",
-  },
-  {
-    n: 15,
-    title: "Trade up to never-expiring PAGE token",
-    thai: "เอา long-lived user token ที่ได้ ไปเรียก /me/accounts จะคืน access_token ของแต่ละ Page ที่คุณ admin token Page ตัวนี้จะ ไม่มีวันหมดอายุ ตราบใดที่คุณยังเป็น admin ของ Page",
-    english:
-      "Call /me/accounts with the long-lived user token. Each entry's access_token is the Page token. Those Page tokens NEVER expire as long as you remain an admin.",
-  },
+// ── Step 1: Create Facebook App (screenshots 01–08) ────────────────────────
+const step1Shots = [
+  { src: `${BASE}/01-my-apps.png`,        alt: "My Apps page — developers.facebook.com/apps" },
+  { src: `${BASE}/02-create-app.png`,      alt: "Create App modal" },
+  { src: `${BASE}/03-app-name.png`,        alt: "App name and contact email" },
+  { src: `${BASE}/04-use-cases.png`,       alt: "Use case selection" },
+  { src: `${BASE}/05-pages-use-case.png`,  alt: "Pages use case selected" },
+  { src: `${BASE}/06-app-dashboard.png`,   alt: "App Dashboard with App ID" },
+  { src: `${BASE}/07-customize-perms.png`, alt: "Customize permissions page" },
+  { src: `${BASE}/08-perms-ready.png`,     alt: "All 4 permissions ready for testing" },
 ];
 
-const curl1 = `curl -G "https://graph.facebook.com/v25.0/oauth/access_token" \\
-  --data-urlencode "grant_type=fb_exchange_token" \\
-  --data-urlencode "client_id=YOUR_APP_ID" \\
-  --data-urlencode "client_secret=YOUR_APP_SECRET" \\
-  --data-urlencode "fb_exchange_token=YOUR_SHORT_LIVED_USER_TOKEN"`;
+// ── Step 2: Gen short-lived user token (screenshots 09–13) ────────────────
+const step2Shots = [
+  { src: `${BASE}/09-graph-explorer.png`, alt: "Graph API Explorer with app selected" },
+  { src: `${BASE}/10-oauth-approve.png`,  alt: "OAuth approval dialog" },
+  { src: `${BASE}/11-pages-selector.png`, alt: "Select which Page to grant access to" },
+  { src: `${BASE}/12-review-access.png`,  alt: "Review access permissions" },
+  { src: `${BASE}/13-connected.png`,      alt: "Connected — short-lived user token in field" },
+];
 
-const curl2 = `curl "https://graph.facebook.com/v25.0/me/accounts?access_token=YOUR_LONG_LIVED_USER_TOKEN"`;
+// ── Step 3: Exchange to long-lived (screenshot 14) ────────────────────────
+const step3Shot = { src: `${BASE}/14-app-secret.png`, alt: "App secret revealed in App settings" };
 
-const curlVerify = `curl "https://graph.facebook.com/v25.0/debug_token?input_token=PAGE_TOKEN&access_token=APP_ID|APP_SECRET"`;
+const curlExchange = `# short-lived → long-lived user token (~60 วัน)
+curl -G \\
+  "https://graph.facebook.com/v19.0/oauth/access_token" \\
+  -d "grant_type=fb_exchange_token" \\
+  -d "client_id=$APP_ID" \\
+  -d "client_secret=$APP_SECRET" \\
+  -d "fb_exchange_token=$SHORT_TOKEN"`;
 
-const samplePost = `curl -X POST "https://graph.facebook.com/v25.0/me/feed" \\
-  -d "message=Hello world from my Page" \\
-  -d "access_token=PAGE_TOKEN"`;
+const curlAccounts = `# list pages + page tokens
+curl -G "https://graph.facebook.com/v19.0/me/accounts" \\
+  -d "access_token=$LONG_USER_TOKEN"`;
+
+const curlPageToken = `# long-lived page token (no expiry)
+curl -G "https://graph.facebook.com/v19.0/$PAGE_ID" \\
+  -d "fields=access_token" \\
+  -d "access_token=$LONG_USER_TOKEN"
+
+# → { "access_token": "EAAB..." , "id": "..." }`;
+
+const curlKeychain = `# save
+security add-generic-password \\
+  -a "$USER" -s "MINT_FB_PAGE_TOKEN" -w "EAAB..."
+
+# read (inside a script)
+PAGE_TOKEN=$(security find-generic-password -w -s "MINT_FB_PAGE_TOKEN")`;
+
+function Code({ children }: { children: React.ReactNode }) {
+  return (
+    <code
+      style={{
+        fontFamily: "var(--f-mono)",
+        background: "var(--bg-2)",
+        padding: "1px 5px",
+        borderRadius: "4px",
+      }}
+    >
+      {children}
+    </code>
+  );
+}
+
+function ShotGrid({ shots }: { shots: { src: string; alt: string }[] }) {
+  return (
+    <div className="shot-grid">
+      {shots.map((s) => (
+        <figure key={s.src} className="shot">
+          <Image
+            src={s.src}
+            alt={s.alt}
+            width={1200}
+            height={900}
+            className="shot-img"
+            sizes="(max-width: 768px) 100vw, 560px"
+          />
+          <figcaption className="shot-cap mono">{s.alt}</figcaption>
+        </figure>
+      ))}
+    </div>
+  );
+}
 
 export default function PageTokenHowTo() {
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background:
-          "linear-gradient(135deg, #fff5fa 0%, #f3edff 45%, #eef9ff 100%)",
-      }}
-    >
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
-        <header className="mb-10 text-center sm:mb-12">
-          <p className="mb-3 text-xs font-medium tracking-widest text-pink-500 sm:text-sm">
-            HOW TO
-          </p>
-          <h1 className="text-2xl font-bold leading-tight break-words text-slate-900 sm:text-4xl">
-            How to get a Long-lived Facebook{" "}
-            <span className="text-pink-600">Page Access Token</span>
+    <>
+      {/* ── HERO ──────────────────────────────────────────────────────── */}
+      <section className="hero">
+        <div className="howto-hero">
+          <i
+            className="spark"
+            style={{ top: "18px", right: "30px", fontSize: "28px", color: "var(--pink-deep)" }}
+          >
+            ✦
+          </i>
+          <i
+            className="spark"
+            style={{ bottom: "18px", right: "140px", fontSize: "22px", color: "var(--mint-deep)", animationDelay: ".5s" }}
+          >
+            ✿
+          </i>
+          <div className="crumb">Mint · how-to · 001 · ~ 12 นาที</div>
+          <h1>
+            Long-lived Facebook
+            <br />
+            Page Access Token
           </h1>
-          <p className="mt-5 text-sm leading-7 text-slate-600 sm:mt-6 sm:text-base">
-            Step-by-step วิธีสร้าง Facebook App ใหม่และดึง{" "}
-            <strong>Page Access Token ที่ไม่มีวันหมดอายุ</strong>{" "}
-            มาใช้ automate การโพสต์บน Page ของตัวเอง.
-            ใช้กระบวนการนี้ครั้งเดียวก็จบ ไม่ต้อง re-login อีกตราบใดที่คุณยังเป็น admin
-            ของ Page.
+          <p className="desc thai-body">
+            วิธีดึง Page token ที่{" "}
+            <em
+              style={{
+                fontStyle: "normal",
+                background: "var(--lemon)",
+                padding: "0 4px",
+                borderRadius: "4px",
+              }}
+            >
+              ไม่มีวันหมดอายุ
+            </em>{" "}
+            มาใช้ automate Page ของตัวเอง — step-by-step + screenshots.
+            ใช้ครั้งเดียวเก็บไว้ใน Keychain แล้วลืมมันไปได้เลยค่ะ
           </p>
-          <div className="mx-auto mt-6 inline-flex max-w-full items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs text-slate-600 ring-1 ring-pink-200 sm:text-sm">
-            <span>⏱ ใช้เวลา ~15 นาที</span>
-            <span>ฟรี</span>
-            <span>ไม่ต้อง App Review</span>
+          <div className="toolbar">
+            <span className="sticker pink">⏱ 12 min</span>
+            <span className="sticker mint">🪪 Meta dev account</span>
+            <span className="sticker lemon">🔑 Page admin</span>
+            <span className="sticker sky">💻 cURL / Postman</span>
           </div>
-        </header>
+        </div>
+      </section>
 
-        <section className="mb-10 rounded-2xl bg-white/60 p-5 ring-1 ring-pink-200 backdrop-blur sm:p-6">
-          <h2 className="mb-3 text-base font-semibold text-slate-900 sm:text-lg">
-            Token นี้คืออะไร แล้วทำไมต้องใช้
-          </h2>
-          <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
-            <li className="break-words">
-              <strong>User token</strong> ปกติของ Facebook อายุสั้นมาก (1-2 ชั่วโมง)
-              ต่อให้แลกเป็น long-lived ก็แค่ <strong>60 วัน</strong> หลังจากนั้นต้อง login ใหม่
-            </li>
-            <li className="break-words">
-              <strong>Page token</strong> ที่ได้จาก <code className="break-all">/me/accounts</code>{" "}
-              ด้วย <em>long-lived user token</em> จะ{" "}
-              <strong>ไม่มีวันหมดอายุ</strong> ตราบใดที่คุณยังเป็น admin ของ Page
-              ตัวเดียวกัน (Facebook ออกแบบไว้สำหรับ automation/server-to-server โดยเฉพาะ)
-            </li>
-            <li className="break-words">
-              เอาไว้ใช้กับ Graph API endpoint อย่าง{" "}
-              <code className="break-all">POST /me/feed</code>,{" "}
-              <code className="break-all">POST /me/photos</code>,{" "}
-              <code className="break-all">GET /me/insights</code>{" "}
-              ฯลฯ
-            </li>
-          </ul>
-        </section>
+      {/* ── INTRO ─────────────────────────────────────────────────────── */}
+      <section style={{ paddingTop: "24px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.4fr 1fr",
+            gap: "24px",
+            alignItems: "flex-start",
+          }}
+        >
+          <div>
+            <h2>ทำไมต้องเป็น long-lived?</h2>
+            <p className="thai-body" style={{ marginTop: "10px", fontSize: "15.5px" }}>
+              Page token ที่ออกจาก Graph API Explorer ตามปกติจะหมดอายุใน{" "}
+              <Code>~ 1 ชม.</Code>. ถ้าอยากให้ bot โพสต์/ตอบ comment ได้ 24/7 ต้อง
+              upgrade เป็น long-lived user token ก่อน แล้วค่อย exchange เป็น page token.
+              ที่ดีคือ{" "}
+              <strong>
+                page token ที่ออกมาจาก long-lived user token จะไม่มี expiry
+              </strong>{" "}
+              ค่ะ — ตามนี้ก็คือใช้ได้ยาวๆ จนกว่าจะ revoke เอง
+            </p>
+            <p className="thai-body" style={{ fontSize: "15.5px" }}>
+              มิ้นใช้ token แบบนี้แหละค่ะ เก็บไว้ใน macOS Keychain ใต้ key{" "}
+              <Code>MINT_FB_PAGE_TOKEN</Code> แล้ว <Code>mbt-store-bot</Code> หยิบไปใช้ผ่าน{" "}
+              <Code>security find-generic-password</Code>.
+            </p>
+          </div>
+          <aside
+            style={{
+              border: "var(--border)",
+              borderRadius: "var(--r-card)",
+              background: "var(--paper)",
+              padding: "20px",
+              boxShadow: "var(--shadow-hard-sm)",
+            }}
+          >
+            <div
+              className="mono"
+              style={{ fontSize: "11px", color: "var(--ink-soft)", letterSpacing: ".08em", textTransform: "uppercase" }}
+            >
+              checklist
+            </div>
+            <h3 style={{ marginTop: "6px", fontFamily: "var(--f-display)" }}>
+              ของที่ต้องมีก่อนเริ่ม
+            </h3>
+            <ul
+              style={{
+                margin: "12px 0 0",
+                padding: 0,
+                listStyle: "none",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+              }}
+            >
+              {[
+                "FB account ที่เป็น admin ของ Page",
+                "Meta for Developers app (mode = Live)",
+                "App secret + App ID",
+                "Terminal ที่มี cURL",
+                "ที่เก็บ secret (Keychain / 1Password / .env)",
+              ].map((item) => (
+                <li
+                  key={item}
+                  style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "14px" }}
+                >
+                  <span style={{ color: "var(--mint-deep)" }}>✓</span> {item}
+                </li>
+              ))}
+            </ul>
+          </aside>
+        </div>
+      </section>
 
-        <ol className="space-y-10 sm:space-y-12">
-          {steps.map((step) => (
-            <li key={step.n} id={`step-${step.n}`} className="scroll-mt-20">
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-500 text-sm font-bold text-white shadow-sm sm:h-10 sm:w-10 sm:text-base">
-                  {step.n}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-lg font-semibold leading-snug break-words text-slate-900 sm:text-xl">
-                    {step.title}
-                  </h2>
-                  <p className="mt-3 text-sm leading-7 text-slate-700 [overflow-wrap:anywhere] sm:text-base">
-                    {step.thai}
-                  </p>
-                  {step.english && (
-                    <p className="mt-2 text-xs leading-6 text-slate-500 [overflow-wrap:anywhere] sm:text-sm">
-                      <span className="font-medium text-slate-400">EN. </span>
-                      {step.english}
-                    </p>
-                  )}
-                  {step.note && (
-                    <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 ring-1 ring-amber-200 [overflow-wrap:anywhere]">
-                      ⚠ {step.note}
-                    </p>
-                  )}
-                  {step.image && (
-                    <figure className="mt-5 overflow-hidden rounded-xl ring-1 ring-slate-200">
-                      <Image
-                        src={step.image.src}
-                        alt={step.image.alt}
-                        width={2200}
-                        height={1768}
-                        className="h-auto w-full"
-                        sizes="(max-width: 768px) 100vw, 768px"
-                      />
-                    </figure>
-                  )}
-                  {step.n === 14 && (
-                    <pre className="mt-5 overflow-x-auto rounded-xl bg-slate-900 p-3 text-[11px] leading-5 text-pink-100 sm:p-4 sm:text-xs sm:leading-6">
-                      <code>{curl1}</code>
-                    </pre>
-                  )}
-                  {step.n === 15 && (
-                    <>
-                      <pre className="mt-5 overflow-x-auto rounded-xl bg-slate-900 p-3 text-[11px] leading-5 text-pink-100 sm:p-4 sm:text-xs sm:leading-6">
-                        <code>{curl2}</code>
-                      </pre>
-                      <p className="mt-4 text-sm leading-6 text-slate-700 [overflow-wrap:anywhere]">
-                        Response จะมี array <code>data[]</code> แต่ละตัวคือ Page
-                        ที่คุณเป็น admin field <code>access_token</code>{" "}
-                        ของ Page นั้นแหละคือ{" "}
-                        <strong>Long-lived Page Access Token</strong> ที่ต้องการ
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </li>
-          ))}
-        </ol>
+      {/* ── STEPS ─────────────────────────────────────────────────────── */}
+      <section>
+        <div className="sec-head">
+          <div className="ti">
+            <h2>
+              5 steps · ตามนี้เลยค่ะ{" "}
+              <span className="badge mono">STEP-BY-STEP</span>
+            </h2>
+            <div className="sub">
+              รวมเวลาแล้วประมาณ 10–12 นาที ถ้าทำครั้งแรก. ครั้งต่อๆ ไป ใช้แค่ขั้น 4 ก็พอ
+            </div>
+          </div>
+          <div className="meta mono">// fb-page-token.sh</div>
+        </div>
 
-        <section className="mt-16 rounded-2xl bg-white/60 p-5 ring-1 ring-pink-200 backdrop-blur sm:p-6">
-          <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
-            ตรวจสอบว่า Token ไม่มีวันหมดอายุจริง
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-slate-700 [overflow-wrap:anywhere]">
-            เรียก <code>debug_token</code> endpoint แล้วดูค่า{" "}
-            <code>expires_at</code> ต้องเป็น <strong>0</strong> (แปลว่า never).
+        <div className="steps">
+
+          {/* STEP 1 */}
+          <div className="step">
+            <div className="num">1</div>
+            <div className="body">
+              <h3>สร้าง Facebook App + ตั้ง permissions</h3>
+              <p className="thai-body">
+                ไปที่{" "}
+                <a
+                  href="https://developers.facebook.com/apps"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  developers.facebook.com/apps
+                </a>{" "}
+                กด <strong>Create App</strong>. เลือก use case{" "}
+                <strong>Manage everything on your Page</strong> จะ unlock Pages API ให้อัตโนมัติ.
+                เมื่อสร้างเสร็จไปที่ Use cases → Customize แล้ว Add permissions:{" "}
+                <Code>pages_show_list</Code>, <Code>pages_read_engagement</Code>,{" "}
+                <Code>pages_manage_posts</Code>, <Code>pages_manage_engagement</Code>{" "}
+                จนทุกตัวขึ้น <em>Ready for testing</em>. จด <strong>App ID</strong> ไว้.
+              </p>
+              <ShotGrid shots={step1Shots} />
+            </div>
+          </div>
+
+          {/* STEP 2 */}
+          <div className="step">
+            <div className="num">2</div>
+            <div className="body">
+              <h3>เปิด Graph API Explorer แล้ว gen short-lived user token</h3>
+              <p className="thai-body">
+                ไปที่{" "}
+                <a
+                  href="https://developers.facebook.com/tools/explorer/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  developers.facebook.com/tools/explorer
+                </a>{" "}
+                เลือก app ของเรา. เพิ่ม permissions ทั้ง 4 ตัวแล้วกด{" "}
+                <strong>Generate Access Token</strong> — Facebook จะเปิด OAuth popup
+                ให้ grant สิทธิ์. เลือกเฉพาะ Page ที่ต้องการแล้ว Save.
+                เมื่อ popup ปิด ช่อง Access Token จะมี short-lived user token (~1 ชม.) พร้อมใช้.
+              </p>
+              <ShotGrid shots={step2Shots} />
+            </div>
+          </div>
+
+          {/* STEP 3 */}
+          <div className="step">
+            <div className="num">3</div>
+            <div className="body">
+              <h3>Copy App Secret แล้ว exchange เป็น long-lived user token (~60 วัน)</h3>
+              <p className="thai-body">
+                เปิด App settings → Basic แล้วกด Show ที่ช่อง{" "}
+                <strong>App secret</strong> — คัดลอกเก็บไว้ใน Keychain,{" "}
+                <strong>ห้าม commit ลง git</strong>.
+              </p>
+              <figure className="shot" style={{ maxWidth: "480px" }}>
+                <Image
+                  src={step3Shot.src}
+                  alt={step3Shot.alt}
+                  width={1200}
+                  height={900}
+                  className="shot-img"
+                  sizes="(max-width: 768px) 100vw, 480px"
+                />
+                <figcaption className="shot-cap mono">{step3Shot.alt}</figcaption>
+              </figure>
+              <p className="thai-body" style={{ marginTop: "16px" }}>
+                จากนั้นรัน cURL นี้ใน terminal — แทน <Code>$APP_ID</Code>,{" "}
+                <Code>$APP_SECRET</Code>, <Code>$SHORT_TOKEN</Code> ด้วยของจริง:
+              </p>
+              <pre>
+                <code>{curlExchange}</code>
+              </pre>
+              <p className="thai-body" style={{ marginTop: "12px" }}>
+                response จะมี <Code>access_token</Code> ตัวใหม่ + <Code>expires_in</Code>{" "}
+                ประมาณ 5183999 วินาที (~60 วัน) — เก็บไว้ก่อน, อย่าเพิ่งโยน
+              </p>
+            </div>
+          </div>
+
+          {/* STEP 4 */}
+          <div className="step">
+            <div className="num">4</div>
+            <div className="body">
+              <h3>ขอ page token แบบไม่หมดอายุ</h3>
+              <p className="thai-body">
+                เรียก <Code>/me/accounts</Code> ด้วย long-lived user token จะได้ list ของ
+                Page ทุกอันที่เราเป็น admin พร้อม id + page token:
+              </p>
+              <pre>
+                <code>{curlAccounts}</code>
+              </pre>
+              <p className="thai-body" style={{ marginTop: "12px" }}>
+                trick คือ — ยิง <Code>/{"{page-id}"}?fields=access_token</Code> โดยใช้{" "}
+                <em
+                  style={{
+                    fontStyle: "normal",
+                    background: "var(--lemon)",
+                    padding: "0 4px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  long-lived user token
+                </em>{" "}
+                เป็น auth. page token ที่ได้กลับมา{" "}
+                <strong>จะไม่มี expires_in</strong> ค่ะ:
+              </p>
+              <pre>
+                <code>{curlPageToken}</code>
+              </pre>
+              <p className="thai-body" style={{ marginTop: "12px" }}>
+                verify ด้วย <Code>/debug_token</Code> ดู <Code>expires_at: 0</Code> หรือ{" "}
+                <em>never</em>
+              </p>
+            </div>
+          </div>
+
+          {/* STEP 5 */}
+          <div className="step">
+            <div className="num">5</div>
+            <div className="body">
+              <h3>เก็บลง Keychain แล้วเรียกใช้</h3>
+              <p className="thai-body">
+                บน macOS ใช้ <Code>security add-generic-password</Code> เก็บไว้ในชื่อที่จำง่าย
+                จากนั้น script ทุกตัวเรียก token ผ่าน{" "}
+                <Code>security find-generic-password -w</Code> — ไม่ต้องเก็บใน .env
+                ที่อ่านได้ทั้งบ้าน
+              </p>
+              <pre>
+                <code>{curlKeychain}</code>
+              </pre>
+              <p className="thai-body" style={{ marginTop: "12px" }}>
+                เรียบร้อยค่ะ 🌸 ตอนนี้ <Code>mbt-store-bot</Code> โพสต์ FB
+                ได้ตลอดไม่ต้องคอย refresh token แล้ว
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── GOTCHAS ───────────────────────────────────────────────────── */}
+      <section>
+        <div className="sec-head">
+          <div className="ti">
+            <h2>
+              Gotchas ที่มิ้นโดนมาก่อน{" "}
+              <span className="badge mono">เก็บไว้น้า</span>
+            </h2>
+            <div className="sub">ปัญหาที่เจอตอน setup จริง บันทึกไว้กันลืม</div>
+          </div>
+        </div>
+        <div className="integ" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
+          <article className="integ-card" style={{ gridColumn: "auto" }}>
+            <header className="integ-head" style={{ background: "var(--pink)" }}>
+              <span className="dots">
+                <i /><i /><i />
+              </span>
+              <span className="title">App mode = Development</span>
+            </header>
+            <div className="integ-body">
+              <p className="thai-body" style={{ fontSize: "14.5px" }}>
+                token จะใช้ได้แต่กับ admin/tester ของ app เท่านั้น. switch เป็น{" "}
+                <strong>Live</strong> ใน App Dashboard ก่อนใช้จริง
+              </p>
+            </div>
+          </article>
+          <article className="integ-card" style={{ gridColumn: "auto" }}>
+            <header className="integ-head" style={{ background: "var(--pink)" }}>
+              <span className="dots">
+                <i /><i /><i />
+              </span>
+              <span className="title">scope ไม่ครบ</span>
+            </header>
+            <div className="integ-body">
+              <p className="thai-body" style={{ fontSize: "14.5px" }}>
+                ลืม <Code>pages_manage_posts</Code> = โพสต์ไม่ได้. ลืม{" "}
+                <Code>pages_manage_engagement</Code> = comment/react ไม่ได้
+              </p>
+            </div>
+          </article>
+          <article className="integ-card" style={{ gridColumn: "auto" }}>
+            <header className="integ-head" style={{ background: "var(--pink)" }}>
+              <span className="dots">
+                <i /><i /><i />
+              </span>
+              <span className="title">password change = revoke</span>
+            </header>
+            <div className="integ-body">
+              <p className="thai-body" style={{ fontSize: "14.5px" }}>
+                ถ้าเปลี่ยนรหัส FB ของ admin token จะ revoke ทันที. ต้องเริ่มจาก step 1
+                ใหม่ — ดังนั้นใช้ account แยกที่ไม่ได้ใช้ login ทั่วไปจะปลอดภัยกว่า
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      {/* ── NEXT ──────────────────────────────────────────────────────── */}
+      <section>
+        <div
+          style={{
+            border: "var(--border)",
+            borderRadius: "var(--r-card)",
+            background: "linear-gradient(135deg,var(--mint),var(--sakura))",
+            padding: "32px",
+            boxShadow: "var(--shadow-hard)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <i
+            className="spark"
+            style={{ top: "14px", right: "24px", fontSize: "28px", color: "var(--pink-deep)" }}
+          >
+            ✦
+          </i>
+          <div
+            className="mono"
+            style={{ fontSize: "12px", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--ink-soft)" }}
+          >
+            Next up · HOWTO 002
+          </div>
+          <h2 style={{ marginTop: "6px" }}>tmux 4-pane Mint layout</h2>
+          <p
+            className="thai-body"
+            style={{ maxWidth: "60ch", marginTop: "10px", fontSize: "15.5px" }}
+          >
+            วิธี set tmux ให้ main / ops / trio twins ทำงานคู่ขนาน + script{" "}
+            <code
+              style={{
+                fontFamily: "var(--f-mono)",
+                background: "rgba(255,255,255,.6)",
+                padding: "1px 5px",
+                borderRadius: "4px",
+              }}
+            >
+              avatar-boot.sh
+            </code>{" "}
+            ที่ revive pane ทั้งหมดในคำสั่งเดียว
           </p>
-          <pre className="mt-4 overflow-x-auto rounded-xl bg-slate-900 p-3 text-[11px] leading-5 text-emerald-100 sm:p-4 sm:text-xs sm:leading-6">
-            <code>{curlVerify}</code>
-          </pre>
-
-          <h3 className="mt-8 text-sm font-semibold text-slate-900 sm:text-base">
-            ลองโพสต์
-          </h3>
-          <pre className="mt-3 overflow-x-auto rounded-xl bg-slate-900 p-3 text-[11px] leading-5 text-emerald-100 sm:p-4 sm:text-xs sm:leading-6">
-            <code>{samplePost}</code>
-          </pre>
-        </section>
-
-        <section className="mt-12 rounded-2xl bg-rose-50/70 p-5 ring-1 ring-rose-200 sm:p-6">
-          <h2 className="text-base font-semibold text-rose-900 sm:text-lg">
-            Token จะตายเมื่อไหร่
-          </h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-rose-900">
-            <li className="break-words">คุณถูกถอดสิทธิ์ admin ของ Page</li>
-            <li className="break-words">
-              คุณเข้าไป revoke แอปที่{" "}
-              <a
-                href="https://www.facebook.com/settings?tab=business_tools"
-                className="underline"
-              >
-                Settings &gt; Business Tools
-              </a>
-            </li>
-            <li className="break-words">เปลี่ยนรหัสผ่าน Facebook (บางเคส)</li>
-            <li className="break-words">Facebook ยึดสิทธิ์แอปเพราะละเมิด policy</li>
-          </ul>
-          <p className="mt-4 text-sm leading-6 text-rose-900 [overflow-wrap:anywhere]">
-            ถ้าโดนกรณีใดกรณีหนึ่ง ให้กลับมาเดิน Step 8 ถึง 15 ใหม่ (ไม่ต้องสร้างแอปใหม่)
-          </p>
-        </section>
-
-        <footer className="mt-16 border-t border-pink-200 pt-8 text-center text-xs text-slate-500 sm:text-sm">
-          <p>
-            Made with 🌸 by{" "}
-            <Link href="/" className="font-medium text-pink-600 hover:underline">
-              Mint AI Assistant
-            </Link>
-            . Captured live during a real flow on 2026-05-25.
-          </p>
-        </footer>
-      </div>
-    </div>
+          <Link href="/" className="sticker pink" style={{ marginTop: "18px", display: "inline-flex", transform: "none" }}>
+            ← กลับหน้าแรก
+          </Link>
+        </div>
+      </section>
+    </>
   );
 }
